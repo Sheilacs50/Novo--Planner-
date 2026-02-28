@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b2a66">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planner 365 — Sheila (Detalhado)</title>
+  <style>
+    :root{
+      --bg:#0b2a66;
+      --card:#123a8a;
+      --card2:#0f347c;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.82);
+      --stroke:rgba(255,255,255,.18);
+      --gold:#FFD700;
+      --btn:#1e4ed8;
+      --btn2:rgba(255,255,255,.12);
+      --danger:#b91c1c;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0; padding:14px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 20% 0%, #143c8e 0%, var(--bg) 60%);
+      color:var(--text);
+    }
+    .container{max-width:1100px;margin:auto;display:flex;flex-direction:column;gap:12px;}
+    h1{margin:6px 0 0;text-align:center;font-size:28px;}
+    .sub{margin:2px 0 0;text-align:center;color:var(--muted);font-size:13px;}
+    .topbar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      padding:10px; border:1px solid var(--stroke); border-radius:18px;
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+    }
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid var(--stroke);}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px;}
+    @media(min-width:980px){ .grid{grid-template-columns: 1.15fr .85fr;} }
+    .card{
+      background: linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+    }
+    .card h2{margin:0 0 10px;font-size:18px;}
+    .card h3{margin:10px 0 8px;font-size:15px;color:var(--muted);}
+    .muted{color:var(--muted);}
+    .small{font-size:12px;color:var(--muted);}
+    button{
+      border:none; border-radius:14px;
+      padding:10px 12px;
+      background:var(--btn);
+      color:white; font-weight:700;
+      cursor:pointer;
+    }
+    button.secondary{background:var(--btn2);}
+    button.danger{background:var(--danger);}
+    input, textarea, select{
+      width:100%;
+      border-radius:14px;
+      padding:10px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+      color:white;
+      outline:none;
+    }
+    textarea{min-height:80px; resize:vertical;}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tab{
+      padding:10px 12px; border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+      cursor:pointer; user-select:none;
+      font-weight:700; font-size:13px;
+    }
+    .tab.active{background:rgba(255,255,255,.16); outline:2px solid rgba(255,215,0,.35);}
+    .section{display:none;}
+    .section.active{display:block;}
+    .checkline{
+      display:flex; align-items:flex-start; gap:10px;
+      padding:10px; border-radius:16px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      margin-bottom:8px;
+    }
+    .checkline input[type="checkbox"]{width:18px;height:18px;margin-top:2px;}
+    .progress{height:16px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;}
+    .bar{height:100%;width:0%;background:var(--gold);}
+    .kpi{
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    @media(min-width:520px){ .kpi{grid-template-columns: repeat(4, 1fr);} }
+    .kpi .box{
+      border:1px solid var(--stroke); border-radius:16px; padding:10px;
+      background: rgba(255,255,255,.06);
+    }
+    .kpi .label{font-size:12px;color:var(--muted);}
+    .kpi .value{font-size:20px;font-weight:800;}
+    .cal-wrap{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;}
+    .cal{
+      width:100%;
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+    }
+    .cal-header{
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:10px; border-bottom:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+    }
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr); gap:1px; background: rgba(255,255,255,.08);}
+    .cal-cell{
+      min-height:74px;
+      background: rgba(11,42,102,.55);
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      border:0;
+      color:white;
+      text-align:left;
+      cursor:pointer;
+    }
+    .cal-cell.out{opacity:.38;}
+    .cal-cell.today{outline:2px solid rgba(255,215,0,.55);}
+    .cal-dow{padding:8px;background: rgba(255,255,255,.06); text-align:center; font-size:12px; color:var(--muted);}
+    .event{font-size:11px; padding:6px 8px; border-radius:12px; background: rgba(255,255,255,.10); border:1px solid var(--stroke);}
+    .split{display:grid;grid-template-columns:1fr;gap:10px;}
+    @media(min-width:840px){ .split{grid-template-columns: 1.05fr .95fr;} }
+    .svgbox{width:100%; border:1px solid var(--stroke); border-radius:18px; background: rgba(255,255,255,.06); padding:10px;}
+    .hint{font-size:12px;color:var(--muted);}
+  
+/* ===== Botão label estilo botão ===== */
+.btnlike{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.08); color:inherit; }
+/* ===== Tema (variáveis) ===== */
+:root{
+  --bg1:#0a2a66; --bg2:#0b3a84;
+  --card: rgba(255,255,255,.08);
+  --card2: rgba(255,255,255,.10);
+  --text:#ffffff;
+  --muted: rgba(255,255,255,.78);
+  --border: rgba(255,255,255,.14);
+}
+[data-theme="light"]{
+  --bg1:#d7e9ff; --bg2:#b9d8ff;
+  --card: rgba(255,255,255,.78);
+  --card2: rgba(255,255,255,.88);
+  --text:#10223a;
+  --muted: rgba(16,34,58,.78);
+  --border: rgba(16,34,58,.18);
+}
+body{ background: linear-gradient(180deg, var(--bg1), var(--bg2)) !important; color: var(--text) !important; }
+.card{ background: var(--card) !important; border-color: var(--border) !important; }
+.section{ background: var(--card2) !important; border-color: var(--border) !important; }
+.small{ color: var(--muted) !important; }
+input, textarea, select{ background: rgba(255,255,255,.12) !important; border-color: var(--border) !important; color: var(--text) !important; }
+[data-theme="light"] input, [data-theme="light"] textarea, [data-theme="light"] select{ background: rgba(16,34,58,.06) !important; }
+.pill{ border-color: var(--border) !important; background: rgba(255,255,255,.10) !important; }
+[data-theme="light"] .pill{ background: rgba(16,34,58,.06) !important; }
+
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>📘 Planner 365 — Rotina e Metas</h1>
+    <p class="sub">Versículo diário (pronto para ler e compartilhar) • Calendário sempre aberto • Metas por área • Salva automaticamente</p>
+
+    <div class="topbar">
+      <div class="row">
+        <span class="pill">📅 <span id="todayLabel"></span></span>
+        <span class="pill">😊 Humor: <b id="moodLabel">—</b></span>
+        <span class="pill">🎯 Progresso do dia: <b id="dayScore">0%</b></span>
+      </div>
+      <div class="row">
+        <button class="secondary" onclick="shareVerse()">📤 Compartilhar versículo</button>
+        <button class="secondary" onclick="shareDaySummary()">📤 Compartilhar resumo do dia</button>
+        <button class="secondary" onclick="newDay()">🌅 Novo dia</button>
+        <button class="secondary" onclick="toggleTheme()">🌓 Modo noite</button>
+        <button class="secondary" onclick="downloadBackup()">💾 Backup</button>
+        <label class="btnlike secondary" style="cursor:pointer;">📂 Restaurar<input id="backupFile" type="file" accept="application/json" style="display:none" onchange="restoreBackup(event)"></label>
+        <button class="secondary" onclick="exportBackup()">🧾 Exportar</button>
+        <button class="secondary" onclick="importBackup()">📥 Importar</button>
+        <button class="danger" onclick="resetAll()">🗑️ Zerar</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- COLUNA PRINCIPAL -->
+      <div class="card">
+        <div class="tabs" role="tablist">
+          <div class="tab active" data-tab="hoje">Hoje</div>
+          <div class="tab" data-tab="espiritual">Espiritual</div>
+          <div class="tab" data-tab="saude">Saúde</div>
+          <div class="tab" data-tab="estudos">Estudos</div>
+          <div class="tab" data-tab="financas">Finanças</div>
+          <div class="tab" data-tab="diario">Diário</div>
+          <div class="tab" data-tab="apoio">Apoio</div>
+        </div>
+
+        <!-- HOJE -->
+        <div class="section active" id="sec-hoje">
+          <h2>📖 Versículo do dia</h2>
+          <p id="verseText" style="margin:0 0 6px; font-style:italic;"></p>
+          <p class="small" id="verseRef"></p>
+          <div class="row" style="margin-top:8px;">
+            <button class="secondary" onclick="openVerseLink()">🔎 Abrir versículo</button>
+            <button class="secondary" onclick="copyVerse()">📋 Copiar</button>
+          </div>
+
+          <h3>😊 Humor do dia</h3>
+          <div class="row">
+            <button class="secondary" onclick="setMood('😀 Feliz')">😀 Feliz</button>
+            <button class="secondary" onclick="setMood('😌 Em paz')">😌 Em paz</button>
+            <button class="secondary" onclick="setMood('😐 Neutra')">😐 Neutra</button>
+            <button class="secondary" onclick="setMood('😔 Triste')">😔 Triste</button>
+            <button class="secondary" onclick="setMood('💪 Motivada')">💪 Motivada</button>
+            <button class="secondary" onclick="setMood('😤 Ansiosa')">😤 Ansiosa</button>
+          </div>
+          <p class="hint" style="margin-top:8px;">Dica: selecione seu humor e faça 1 micro-ação: “só 5 minutos”. Isso aumenta a chance de começar.</p>
+
+          <h3>✅ Checklist do dia</h3>
+          <div class="checkline">
+            <input type="checkbox" id="c_espiritual" onchange="saveAndUpdate()" />
+            <div>
+              <b>🙏 Espiritual</b><div class="small">06:00–06:40 • oração + leitura + reflexão</div>
+            </div>
+          </div>
+          <div class="checkline">
+            <input type="checkbox" id="c_saude" onchange="saveAndUpdate()" />
+            <div>
+              <b>💪 Saúde</b><div class="small">07:00–07:40 • caminhada + água</div>
+            </div>
+          </div>
+          <div class="checkline">
+            <input type="checkbox" id="c_estudos" onchange="saveAndUpdate()" />
+            <div>
+              <b>📚 Estudos</b><div class="small">09:00–11:00 • teoria + prática (análise de dados)</div>
+            </div>
+          </div>
+          <div class="checkline">
+            <input type="checkbox" id="c_financas" onchange="saveAndUpdate()" />
+            <div>
+              <b>💰 Finanças</b><div class="small">16:00–16:30 • registrar + planejar</div>
+            </div>
+          </div>
+
+          <div class="progress"><div class="bar" id="dayBar"></div></div>
+          <p class="small" id="dayBarLabel" style="margin:8px 0 0;">0/4 concluído</p>
+
+          <h3>📝 Planejamento do dia (etapas)</h3>
+          <div class="split">
+            <div>
+              <label class="small">1) Prioridade principal do dia</label>
+              <input id="prio" placeholder="Ex: caminhar 30 min + estudar 30 min" oninput="saveAndUpdate()" />
+            </div>
+            <div>
+              <label class="small">2) Uma vitória pequena (5–10 min)</label>
+              <input id="micro" placeholder="Ex: ler 1 página / arrumar a mesa / beber água" oninput="saveAndUpdate()" />
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label class="small">3) Anotações e gratidão</label>
+            <textarea id="notes" placeholder="Ex: Hoje agradeço por... / Aprendi que... / Amanhã vou..." oninput="saveAndUpdate()"></textarea>
+          </div>
+        </div>
+
+        <!-- ESPIRITUAL -->
+        <div class="section" id="sec-espiritual">
+          <h2>🙏 Objetivo Espiritual</h2>
+          <label class="small">Título do objetivo</label>
+          <input id="obj_esp" placeholder="Ex: Fortalecer minha fé e paz interior" oninput="saveAndUpdate()" />
+          <h3>Atividades sugeridas (marque o que fez)</h3>
+          <div class="checkline"><input type="checkbox" id="ea_oracao" onchange="saveAndUpdate()"/><div><b>🙏 Oração</b><div class="small">2–10 min • conversa sincera com Deus</div></div></div>
+          <div class="checkline"><input type="checkbox" id="ea_biblia" onchange="saveAndUpdate()"/><div><b>📖 Ler a Bíblia</b><div class="small">1 capítulo ou 10–15 versículos</div></div></div>
+          <div class="checkline"><input type="checkbox" id="ea_medit" onchange="saveAndUpdate()"/><div><b>🕊️ Meditar</b><div class="small">3 min • repetir o versículo</div></div></div>
+          <div class="checkline"><input type="checkbox" id="ea_grat" onchange="saveAndUpdate()"/><div><b>🙏 Agradecer</b><div class="small">Anote 3 motivos de gratidão</div></div></div>
+
+          <h3>Etapas (faça na ordem)</h3>
+          <div class="checkline"><input type="checkbox" id="e1" onchange="saveAndUpdate()"/><div><b>1) Oração curta (2 min)</b><div class="small">Fale com Deus com sinceridade.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="e2" onchange="saveAndUpdate()"/><div><b>2) Leitura do versículo do dia (3–5 min)</b><div class="small">Leia com calma e repita em voz baixa.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="e3" onchange="saveAndUpdate()"/><div><b>3) Reflexão guiada (3 min)</b><div class="small">O que esse versículo fala para minha vida hoje?</div></div></div>
+          <div class="checkline"><input type="checkbox" id="e4" onchange="saveAndUpdate()"/><div><b>4) Ação prática do dia (1 atitude)</b><div class="small">Ex: perdoar, pedir desculpas, ajudar alguém, ter paciência.</div></div></div>
+          <h3>Análise (descritiva / preditiva / prescritiva)</h3>
+          <p class="small"><b>Descritiva:</b> Você marcou as etapas e registrou sua reflexão.</p>
+          <p class="small"><b>Preditiva:</b> Quanto maior constância, mais estabilidade emocional e clareza.</p>
+          <p class="small"><b>Prescritiva:</b> Faça a etapa 1 mesmo sem vontade; depois o resto fica mais leve.</p>
+          <label class="small">Reflexão do dia</label>
+          <textarea id="ref_esp" placeholder="O que Deus falou ao meu coração hoje?" oninput="saveAndUpdate()"></textarea>
+        </div>
+
+        <!-- SAÚDE -->
+        <div class="section" id="sec-saude">
+          <h2>💪 Objetivo Saúde</h2>
+          <label class="small">Título do objetivo</label>
+          <input id="obj_saude" placeholder="Ex: Melhorar energia, dormir melhor e cuidar do corpo" oninput="saveAndUpdate()" />
+          <h3>Atividades sugeridas (marque o que fez)</h3>
+          <div class="checkline"><input type="checkbox" id="sa_camin" onchange="saveAndUpdate()"/><div><b>🚶 Caminhar / Alongar</b><div class="small">10–30 min</div></div></div>
+          <div class="checkline"><input type="checkbox" id="sa_agua" onchange="saveAndUpdate()"/><div><b>💧 Hidratação</b><div class="small">Beba água ao longo do dia</div></div></div>
+          <div class="checkline"><input type="checkbox" id="sa_refe" onchange="saveAndUpdate()"/><div><b>🥗 Refeição equilibrada</b><div class="small">1 melhoria hoje</div></div></div>
+          <div class="checkline"><input type="checkbox" id="sa_sono" onchange="saveAndUpdate()"/><div><b>🛌 Rotina do sono</b><div class="small">Telas off 30 min antes</div></div></div>
+
+          <h3>Etapas (faça na ordem)</h3>
+          <div class="checkline"><input type="checkbox" id="s1" onchange="saveAndUpdate()"/><div><b>1) Água (2 copos)</b><div class="small">Antes do café.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="s2" onchange="saveAndUpdate()"/><div><b>2) Movimento (10–30 min)</b><div class="small">Caminhar, alongar ou dança leve.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="s3" onchange="saveAndUpdate()"/><div><b>3) Alimentação consciente</b><div class="small">1 melhoria hoje (menos açúcar, mais fruta, etc.).</div></div></div>
+          <div class="checkline"><input type="checkbox" id="s4" onchange="saveAndUpdate()"/><div><b>4) Sono (rotina)</b><div class="small">Desligar telas 30 min antes.</div></div></div>
+          <h3>Meta do dia</h3>
+          <div class="row">
+            <span class="pill">💧 Água: <b id="waterLabel">0</b>/8</span>
+            <button class="secondary" onclick="water(-1)">-</button>
+            <button onclick="water(1)">+</button>
+          </div>
+
+          <h3>🩺 Saúde — Consultas / Exames (com +)</h3>
+          <div class="split">
+            <div><label class="small">Título</label><input id="healthTitle" placeholder="Ex: Consulta / Exame" /></div>
+            <div><label class="small">Data</label><input id="healthDate" type="date" /></div>
+          </div>
+          <div class="split" style="margin-top:10px;">
+            <div><label class="small">Horário</label><input id="healthTime" type="time" /></div>
+            <div><label class="small">Anotações</label><input id="healthNotes" placeholder="Ex: perguntas, sintomas..." /></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="addListItem('health')">➕ (+) Adicionar</button>
+            <button class="secondary" onclick="clearListInputs('health')">Limpar</button>
+          </div>
+          <div id="healthList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
+
+          <h3 style="margin-top:14px;">🥗 Nutrição</h3>
+          <div class="split">
+            <div><label class="small">Título</label><input id="nutritionTitle" placeholder="Ex: Almoço equilibrado" /></div>
+            <div><label class="small">Data</label><input id="nutritionDate" type="date" /></div>
+          </div>
+          <div class="split" style="margin-top:10px;">
+            <div><label class="small">Horário</label><input id="nutritionTime" type="time" /></div>
+            <div><label class="small">Anotações</label><input id="nutritionNotes" placeholder="Ex: porções, água..." /></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="addListItem('nutrition')">➕ (+) Adicionar</button>
+            <button class="secondary" onclick="clearListInputs('nutrition')">Limpar</button>
+          </div>
+          <div id="nutritionList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
+
+          <h3 style="margin-top:14px;">🏃 Atividades físicas</h3>
+          <div class="split">
+            <div><label class="small">Título</label><input id="activityTitle" placeholder="Ex: Caminhada" /></div>
+            <div><label class="small">Data</label><input id="activityDate" type="date" /></div>
+          </div>
+          <div class="split" style="margin-top:10px;">
+            <div><label class="small">Horário</label><input id="activityTime" type="time" /></div>
+            <div><label class="small">Anotações</label><input id="activityNotes" placeholder="Ex: duração, como me senti" /></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="addListItem('activities')">➕ (+) Adicionar</button>
+            <button class="secondary" onclick="clearListInputs('activities')">Limpar</button>
+          </div>
+          <div id="activitiesList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
+
+          <h3 style="margin-top:14px;">🧠 Terapia / autocuidado</h3>
+          <p class="small">Sugestões: respiração 2 min • escrever 3 sentimentos • caminhar 10 min.</p>
+          <div class="split">
+            <div><label class="small">Título</label><input id="therapyTitle" placeholder="Ex: Terapia / Respiração" /></div>
+            <div><label class="small">Data</label><input id="therapyDate" type="date" /></div>
+          </div>
+          <div class="split" style="margin-top:10px;">
+            <div><label class="small">Horário</label><input id="therapyTime" type="time" /></div>
+            <div><label class="small">Anotações</label><input id="therapyNotes" placeholder="Ex: tema, gatilhos..." /></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="addListItem('therapy')">➕ (+) Adicionar</button>
+            <button class="secondary" onclick="clearListInputs('therapy')">Limpar</button>
+          </div>
+          <div id="therapyList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
+
+          <h3>Análise</h3>
+          <p class="small"><b>Descritiva:</b> você acompanha água + etapas.</p>
+          <p class="small"><b>Preditiva:</b> consistência melhora disposição e humor.</p>
+          <p class="small"><b>Prescritiva:</b> foque em “mínimo viável”: 10 min já conta.</p>
+          <label class="small">Observações</label>
+          <textarea id="ref_saude" placeholder="Como me senti? Dor? Energia? O que ajudou?" oninput="saveAndUpdate()"></textarea>
+        </div>
+
+        <!-- ESTUDOS -->
+        <div class="section" id="sec-estudos">
+          <h2>📚 Objetivo Estudos</h2>
+          <label class="small">Título do objetivo</label>
+          <input id="obj_est" placeholder="Ex: Aprender Análise de Dados do básico ao avançado" oninput="saveAndUpdate()" />
+          <h3>Atividades sugeridas (marque o que fez)</h3>
+          <div class="checkline"><input type="checkbox" id="st_teoria" onchange="saveAndUpdate()"/><div><b>📘 Teoria</b><div class="small">Aula/leitura</div></div></div>
+          <div class="checkline"><input type="checkbox" id="st_pratica" onchange="saveAndUpdate()"/><div><b>🧪 Prática</b><div class="small">Exercício (Excel/Power BI/SQL/Python)</div></div></div>
+          <div class="checkline"><input type="checkbox" id="st_resumo" onchange="saveAndUpdate()"/><div><b>📝 Resumo</b><div class="small">3 pontos do que aprendeu</div></div></div>
+          <div class="checkline"><input type="checkbox" id="st_projeto" onchange="saveAndUpdate()"/><div><b>📂 Mini-projeto</b><div class="small">1 pequeno avanço</div></div></div>
+
+          <h3>Etapas (sessão de estudo)</h3>
+          <div class="checkline"><input type="checkbox" id="t1" onchange="saveAndUpdate()"/><div><b>1) Definir 1 tema do dia</b><div class="small">Ex: Excel, Power BI, SQL, estatística, Python.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="t2" onchange="saveAndUpdate()"/><div><b>2) 25 min foco (Pomodoro)</b><div class="small">Sem distrações.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="t3" onchange="saveAndUpdate()"/><div><b>3) Prática guiada (exercício)</b><div class="small">Aplicar o que viu.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="t4" onchange="saveAndUpdate()"/><div><b>4) Revisão (5 min)</b><div class="small">Escrever 3 pontos que aprendeu.</div></div></div>
+          <h3>Meta de estudo (minutos)</h3>
+          <div class="row">
+            <span class="pill">⏱️ Hoje: <b id="studyLabel">0</b>/120 min</span>
+            <button class="secondary" onclick="study(-10)">-10</button>
+            <button onclick="study(10)">+10</button>
+          </div>
+
+          <h3>📌 Estudos — Tarefas / aulas (com +)</h3>
+          <div class="split">
+            <div><label class="small">Título</label><input id="studyTaskTitle" placeholder="Ex: Aula SQL / Exercício Power BI" /></div>
+            <div><label class="small">Data</label><input id="studyTaskDate" type="date" /></div>
+          </div>
+          <div class="split" style="margin-top:10px;">
+            <div><label class="small">Horário</label><input id="studyTaskTime" type="time" /></div>
+            <div><label class="small">Anotações</label><input id="studyTaskNotes" placeholder="Ex: link, dúvidas, próximos passos" /></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="addListItem('studies')">➕ (+) Adicionar</button>
+            <button class="secondary" onclick="clearListInputs('studies')">Limpar</button>
+          </div>
+          <div id="studiesList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
+
+          <h3>Análise</h3>
+          <p class="small"><b>Descritiva:</b> minutos estudados + etapas concluídas.</p>
+          <p class="small"><b>Preditiva:</b> 2h/dia → evolução forte em 6 meses.</p>
+          <p class="small"><b>Prescritiva:</b> quando estiver cansada, faça 10 min e pare — melhor do que zero.</p>
+          <label class="small">Registro do aprendizado</label>
+          <textarea id="ref_est" placeholder="O que aprendi? Dúvidas? Próximo passo?" oninput="saveAndUpdate()"></textarea>
+        </div>
+
+        <!-- FINANÇAS -->
+        <div class="section" id="sec-financas">
+          <h2>💰 Objetivo Finanças</h2>
+          <label class="small">Título do objetivo</label>
+          <input id="obj_fin" placeholder="Ex: Organizar gastos, sair do aperto e criar reserva" oninput="saveAndUpdate()" />
+          <h3>Atividades sugeridas (marque o que fez)</h3>
+          <div class="checkline"><input type="checkbox" id="fi_reg" onchange="saveAndUpdate()"/><div><b>🧾 Registrar gastos</b><div class="small">Anotar despesas</div></div></div>
+          <div class="checkline"><input type="checkbox" id="fi_rev" onchange="saveAndUpdate()"/><div><b>🔍 Revisar saldo</b><div class="small">Entradas/saídas</div></div></div>
+          <div class="checkline"><input type="checkbox" id="fi_res" onchange="saveAndUpdate()"/><div><b>🏦 Separar reserva</b><div class="small">Mesmo R$ 1 vale</div></div></div>
+          <div class="checkline"><input type="checkbox" id="fi_plan" onchange="saveAndUpdate()"/><div><b>🗓️ Planejar amanhã</b><div class="small">Evitar impulso</div></div></div>
+
+          <h3>Etapas (rotina financeira)</h3>
+          <div class="checkline"><input type="checkbox" id="f1" onchange="saveAndUpdate()"/><div><b>1) Anotar gastos do dia</b><div class="small">Tudo, até o pequeno.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="f2" onchange="saveAndUpdate()"/><div><b>2) Revisar saldo</b><div class="small">Ver entradas e saídas.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="f3" onchange="saveAndUpdate()"/><div><b>3) Separar reserva (mesmo R$ 1)</b><div class="small">A constância importa.</div></div></div>
+          <div class="checkline"><input type="checkbox" id="f4" onchange="saveAndUpdate()"/><div><b>4) Planejar amanhã</b><div class="small">Evitar compras por impulso.</div></div></div>
+
+          <h3>Lançamento rápido</h3>
+          <div class="split">
+            <div>
+              <label class="small">Entrada (R$)</label>
+              <input type="number" id="fin_in" placeholder="Ex: 120" oninput="saveAndUpdate()" />
+            </div>
+            <div>
+              <label class="small">Saída (R$)</label>
+              <input type="number" id="fin_out" placeholder="Ex: 35,50" oninput="saveAndUpdate()" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="calcNet()">Calcular saldo do dia</button>
+            <button class="secondary" onclick="clearNet()">Limpar</button>
+          </div>
+          <p id="netLabel" style="font-weight:800;margin:10px 0 0;"></p>
+
+          <h3>Análise</h3>
+          <p class="small"><b>Descritiva:</b> você registra entradas/saídas e etapas.</p>
+          <p class="small"><b>Preditiva:</b> registrar diariamente reduz “vazamentos” de dinheiro.</p>
+          <p class="small"><b>Prescritiva:</b> método 50–30–20 (ajuste à sua realidade). Comece pela reserva mínima.</p>
+          <label class="small">Observações</label>
+          <textarea id="ref_fin" placeholder="O que gastei sem perceber? Como evitar amanhã?" oninput="saveAndUpdate()"></textarea>
+        </div>
+        <!-- DIÁRIO -->
+        <div class="section" id="sec-diario">
+          <h2>🗓️ Diário (humor + notas)</h2>
+          <p class="small">Registre seu humor e um pequeno texto. Isso ajuda a entender padrões.</p>
+          <h3>😊 Humor (emoji + nome)</h3>
+          <div class="row" style="margin-bottom:8px;">
+            <button class="secondary" onclick="diarySetMood('😀 Feliz')">😀 Feliz</button>
+            <button class="secondary" onclick="diarySetMood('😌 Em paz')">😌 Em paz</button>
+            <button class="secondary" onclick="diarySetMood('😐 Neutra')">😐 Neutra</button>
+            <button class="secondary" onclick="diarySetMood('😔 Triste')">😔 Triste</button>
+            <button class="secondary" onclick="diarySetMood('😤 Ansiosa')">😤 Ansiosa</button>
+            <button class="secondary" onclick="diarySetMood('💪 Motivada')">💪 Motivada</button>
+          </div>
+          <div class="pill">Selecionado: <b id="diaryMoodLabel">—</b></div>
+          <h3 style="margin-top:12px;">📝 Entrada do diário</h3>
+          <label class="small">Título</label>
+          <input id="diaryTitle" placeholder="Ex: Hoje foi um dia..." />
+          <label class="small" style="margin-top:8px;">Anotações</label>
+          <textarea id="diaryText" placeholder="Ex: O que senti? O que aconteceu? O que aprendi?"></textarea>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="addDiaryEntry()">➕ Adicionar</button>
+            <button class="secondary" onclick="clearDiaryInputs()">Limpar</button>
+          </div>
+          <h3 style="margin-top:12px;">📜 Últimas entradas</h3>
+          <div id="diaryList" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- APOIO -->
+        <div class="section" id="sec-apoio">
+          <h2>🧭 Apoio (emoções + controle de hábitos nocivos)</h2>
+          <p class="small"><b>Objetivo:</b> reduzir impulsos, proteger seu dinheiro e fortalecer seu bem-estar. (Não substitui ajuda profissional.)</p>
+
+          <h3>🧠 Check-in rápido</h3>
+          <div class="split">
+            <div>
+              <label class="small">Como estou me sentindo agora?</label>
+              <select id="checkinMood" onchange="saveSupport()">
+                <option value="">Selecione…</option>
+                <option>😀 Feliz</option>
+                <option>😌 Em paz</option>
+                <option>😐 Neutra</option>
+                <option>😔 Triste</option>
+                <option>😤 Ansiosa</option>
+                <option>😡 Irritada</option>
+                <option>😴 Cansada</option>
+              </select>
+            </div>
+            <div>
+              <label class="small">Impulso (0–10)</label>
+              <input id="urgeLevel" type="number" min="0" max="10" placeholder="0" oninput="saveSupport()" />
+            </div>
+          </div>
+          <label class="small" style="margin-top:10px;">Gatilho</label>
+          <input id="triggerText" placeholder="Ex: tédio, estresse, solidão..." oninput="saveSupport()" />
+          <label class="small" style="margin-top:10px;">Plano agora</label>
+          <input id="planNow" placeholder="Ex: respirar 2 min, caminhar, oração, falar com alguém..." oninput="saveSupport()" />
+
+          <div class="row" style="margin-top:10px;">
+            <button onclick="logUrge()">➕ Registrar impulso</button>
+            <button class="secondary" onclick="doBreath()">🌬️ Respiração 2 min</button>
+            <button class="secondary" onclick="quickPrayer()">🙏 Oração curta</button>
+          </div>
+
+          <div class="pill" style="margin-top:10px; align-items:flex-start; gap:10px;">
+            <div style="font-size:18px;">⏳</div>
+            <div style="flex:1;">
+              <div><b>Respiração guiada (2:00)</b></div>
+              <div class="small">4s inspirar • 4s segurar • 6s soltar (repete)</div>
+              <div id="breathTimer" style="font-weight:800; font-size:20px; margin-top:6px;">02:00</div>
+              <div class="row" style="margin-top:8px;">
+                <button class="secondary" onclick="startBreath()">▶️ Iniciar</button>
+                <button class="secondary" onclick="stopBreath()">⏹️ Parar</button>
+              </div>
+            </div>
+          </div>
+
+          <h3 style="margin-top:14px;">🚨 Ações de emergência (quando bater vontade)</h3>
+          <p class="small">Toque em uma ação para preencher seu “Plano agora”.</p>
+          <div class="row" style="flex-wrap:wrap; gap:8px;">
+            <button class="secondary" onclick="setPlanNow('Beber água e lavar o rosto por 2 min')">💧 Água</button>
+            <button class="secondary" onclick="setPlanNow('Levantar e caminhar 5–10 min')">🚶 Caminhar</button>
+            <button class="secondary" onclick="setPlanNow('Largar o celular por 10 min e respirar')">📵 Pausa</button>
+            <button class="secondary" onclick="setPlanNow('Fazer 1 oração curta e ler um versículo')">🙏 Oração</button>
+            <button class="secondary" onclick="setPlanNow('Enviar mensagem para minha pessoa de apoio')">🤝 Pessoa de apoio</button>
+            <button class="secondary" onclick="setPlanNow('Abrir o planner e organizar 1 tarefa simples')">🗓️ Organizar</button>
+          </div>
+
+          <h3 style="margin-top:14px;">📈 Dinheiro poupado (sem apostar)</h3>
+          <div class="split">
+            <div class="pill">Últimos 7 dias: <b id="savedWeek">—</b></div>
+            <div class="pill">Este mês: <b id="savedMonth">—</b></div>
+          </div>
+
+
+          <h3 style="margin-top:14px;">🛡️ Proteções</h3>
+          <div class="checkline"><input type="checkbox" id="p_blockSites" onchange="saveSupport()"/><div><b>🔒 Bloquear sites/apps de aposta</b></div></div>
+          <div class="checkline"><input type="checkbox" id="p_limitPix" onchange="saveSupport()"/><div><b>💳 Limitar Pix/cartão</b></div></div>
+          <div class="checkline"><input type="checkbox" id="p_noBetToday" onchange="saveSupport()"/><div><b>✅ Compromisso: não apostar hoje</b></div></div>
+          <div class="checkline"><input type="checkbox" id="p_accountability" onchange="saveSupport()"/><div><b>🤝 Pessoa de apoio</b><div class="small">Avisar alguém quando o impulso subir.</div></div></div>
+
+          <h3 style="margin-top:14px;">💰 Registro</h3>
+          <div class="split">
+            <div><label class="small">Evitei gastar hoje (R$)</label><input id="moneySaved" type="number" min="0" step="1" placeholder="0" oninput="saveSupport()" /></div>
+            <div><label class="small">Última aposta (data)</label><input id="lastGambleDate" type="date" onchange="saveSupport()" /></div>
+          </div>
+          <div class="pill" style="margin-top:10px;">Dias sem apostar: <b id="daysNoGamble">—</b></div>
+
+          <h3 style="margin-top:14px;">📜 Histórico</h3>
+          <div id="urgeList" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+          <h3 style="margin-top:14px;">📞 Se precisar de ajuda</h3>
+          <div class="pill" style="align-items:flex-start; gap:10px;">
+            <div style="font-size:18px;">🆘</div>
+            <div class="small" style="line-height:1.35;">
+              <b>Brasil:</b> CVV <b>188</b> (24h) — apoio emocional.<br>
+              Se estiver em risco imediato, procure emergência local.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUNA DIREITA -->
+      <div class="card">
+        <h2>📊 Dashboard de Metas</h2>
+        <div class="kpi">
+          <div class="box"><div class="label">Espiritual</div><div class="value" id="k_esp">0%</div></div>
+          <div class="box"><div class="label">Saúde</div><div class="value" id="k_sau">0%</div></div>
+          <div class="box"><div class="label">Estudos</div><div class="value" id="k_est">0%</div></div>
+          <div class="box"><div class="label">Finanças</div><div class="value" id="k_fin">0%</div></div>
+        </div>
+
+        <h3>Metas (editáveis)</h3>
+        <div class="split">
+          <div>
+            <label class="small">Meta água (copos)</label>
+            <input type="number" id="goal_water" min="1" max="30" oninput="saveAndUpdate()" />
+          </div>
+          <div>
+            <label class="small">Meta estudo (min/dia)</label>
+            <input type="number" id="goal_study" min="10" max="600" oninput="saveAndUpdate()" />
+          </div>
+        </div>
+
+        
+        <h2 style="margin-top:14px;">💙 Frase motivacional do dia</h2>
+        <div class="pill" style="align-items:flex-start; gap:10px;">
+          <div style="font-size:20px;">✨</div>
+          <div style="flex:1;">
+            <div id="quoteText" style="font-weight:700; line-height:1.35;">—</div>
+            <div class="small" id="quoteRef" style="margin-top:6px;">Para você, Sheila.</div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="secondary" onclick="newQuote()">🎲 Nova frase</button>
+          <button class="secondary" onclick="copyQuote()">📋 Copiar</button>
+        </div>
+
+
+        <h2 style="margin-top:14px;">⏰ Alarmes (lembretes)</h2>
+        <p class="small">Funciona com o planner aberto no Chrome. Toque em “Permitir notificações”.</p>
+        <div class="split">
+          <div>
+            <label class="small">Atividade</label>
+            <select id="alarmActivity">
+              <option value="🙏 Espiritual — Oração">🙏 Espiritual — Oração</option>
+              <option value="📖 Espiritual — Bíblia">📖 Espiritual — Bíblia</option>
+              <option value="🕊️ Espiritual — Meditar">🕊️ Espiritual — Meditar</option>
+              <option value="💪 Saúde — Caminhada">💪 Saúde — Caminhada</option>
+              <option value="💧 Saúde — Água">💧 Saúde — Água</option>
+              <option value="📚 Estudos — Estudar">📚 Estudos — Estudar</option>
+              <option value="🧪 Estudos — Prática">🧪 Estudos — Prática</option>
+              <option value="💰 Finanças — Revisar">💰 Finanças — Revisar</option>
+              <option value="🏦 Finanças — Reserva">🏦 Finanças — Reserva</option>
+            </select>
+          </div>
+          <div>
+            <label class="small">Horário (hoje)</label>
+            <input id="alarmTime" type="time" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="secondary" onclick="requestNotif()">🔔 Permitir notificações</button>
+          <button onclick="addAlarm()">➕ Adicionar alarme</button>
+          <button class="secondary" onclick="clearAlarms()">Limpar alarmes</button>
+        </div>
+        <div id="alarmList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
+
+        <div class="svgbox" style="margin-top:10px;">
+          <svg id="miniChart" viewBox="0 0 360 180" width="100%" height="180" aria-label="Gráfico de metas">
+            <rect x="0" y="0" width="360" height="180" fill="rgba(255,255,255,.03)"></rect>
+            <text x="12" y="22" fill="rgba(255,255,255,.85)" font-size="12">Progresso do dia por área</text>
+            <!-- barras -->
+            <g id="bars"></g>
+          </svg>
+          <p class="hint">Toque em uma área no topo para registrar suas etapas. O gráfico atualiza sozinho.</p>
+        </div>
+
+        <h2 style="margin-top:14px;">📅 Calendário (sempre aberto)</h2>
+        <div class="cal">
+          <div class="cal-header">
+            <div style="font-weight:800" id="calTitle"></div>
+            <div class="row">
+              <button class="secondary" onclick="prevMonth()">◀</button>
+              <button class="secondary" onclick="goToday()">Hoje</button>
+              <button class="secondary" onclick="nextMonth()">▶</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calDow"></div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <h3>Evento rápido</h3>
+        <label class="small">Título do evento</label>
+        <input id="eventTitle" placeholder="Ex: consulta, culto, estudo..." />
+        <p class="small">Toque em um dia do calendário para adicionar o evento.</p>
+      </div>
+    </div>
+
+    <p class="small" style="text-align:center;margin:4px 0 10px;">
+      ✅ Funciona em um único arquivo • 💾 Salva automaticamente • 📤 Compartilhamento funciona melhor no Chrome do Android
+    </p>
+  </div>
+
+<script>
+  // ==================== DADOS / ESTADO ====================
+  const STORAGE_KEY = "planner365_sheila_v1";
+  const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  // Versos (prontos para ler/compartilhar) — rotação diária
+  // (Você pode ampliar quando quiser)
+  const VERSES = [
+    { ref: "Salmo 23:1", text: "O Senhor é o meu pastor; nada me faltará." },
+    { ref: "Filipenses 4:13", text: "Tudo posso naquele que me fortalece." },
+    { ref: "Provérbios 3:5", text: "Confie no Senhor de todo o seu coração e não se apoie em seu próprio entendimento." },
+    { ref: "Isaías 41:10", text: "Não temas, porque eu sou contigo; não te assombres, porque eu sou teu Deus." },
+    { ref: "Salmo 46:1", text: "Deus é o nosso refúgio e fortaleza, socorro bem presente na angústia." },
+    { ref: "Mateus 11:28", text: "Vinde a mim, todos os que estais cansados e oprimidos, e eu vos aliviarei." },
+    { ref: "Romanos 12:2", text: "Não se amoldem ao padrão deste mundo, mas transformem-se pela renovação da mente." },
+    { ref: "Josué 1:9", text: "Seja forte e corajosa... o Senhor, seu Deus, estará com você por onde andar." },
+    { ref: "Salmo 121:1-2", text: "Elevo os meus olhos para os montes... o meu socorro vem do Senhor." },
+    { ref: "Tiago 1:5", text: "Se alguém tem falta de sabedoria, peça a Deus... e lhe será concedida." },
+    { ref: "1 Pedro 5:7", text: "Lancem sobre ele toda a sua ansiedade, porque ele tem cuidado de vocês." },
+    { ref: "Salmo 37:5", text: "Entregue o seu caminho ao Senhor; confie nele, e ele agirá." },
+    { ref: "João 14:27", text: "Deixo-lhes a paz; a minha paz lhes dou." },
+    { ref: "Salmo 34:18", text: "Perto está o Senhor dos que têm o coração quebrantado." },
+    { ref: "Lamentações 3:22-23", text: "As misericórdias do Senhor... renovam-se cada manhã." },
+    { ref: "Hebreus 11:1", text: "A fé é a certeza daquilo que esperamos e a prova das coisas que não vemos." },
+    { ref: "Salmo 27:1", text: "O Senhor é a minha luz e a minha salvação; de quem terei medo?" },
+    { ref: "Colossenses 3:23", text: "Tudo o que fizerem, façam de todo o coração, como para o Senhor." },
+    { ref: "Provérbios 16:3", text: "Consagre ao Senhor tudo o que você faz, e os seus planos serão bem-sucedidos." },
+    { ref: "2 Coríntios 12:9", text: "A minha graça é suficiente para você, pois o meu poder se aperfeiçoa na fraqueza." }
+  ];
+
+  const DEFAULT = {
+    mood: "—",
+    todayISO: isoDate(new Date()),
+    day: { // por data
+      // [dateISO]: { checklist: {..}, prio, micro, notes, water, studyMin, fin_in, fin_out, net, refs... }
+    },
+    goals: { water: 8, study: 120 },
+    alarms: [],
+    lists: { health: [], nutrition: [], activities: [], therapy: [], studies: [], diary: [] },
+    diaryMood: "—",
+    support: { checkinMood:"", urgeLevel:"", triggerText:"", planNow:"", p_blockSites:false, p_limitPix:false, p_noBetToday:false, p_accountability:false, moneySaved:0, lastGambleDate:"", urges: [], savingsByDate: {} },
+    theme:"dark",
+    quoteIndex:0,
+    lastBackupAt:"",
+    objectives: {
+      esp: "Fortalecer minha fé e paz interior",
+      saude: "Cuidar do corpo e aumentar energia",
+      est: "Aprender Análise de Dados com prática diária",
+      fin: "Organizar gastos e criar reserva"
+    },
+    calendar: { // eventos por data: [ {title} ]
+      // [dateISO]: [{title, id}]
+    },
+    calView: { year: new Date().getFullYear(), month: new Date().getMonth() }
+  };
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return structuredClone(DEFAULT);
+      const st = JSON.parse(raw);
+      return deepMerge(structuredClone(DEFAULT), st);
+    }catch(e){
+      return structuredClone(DEFAULT);
+    }
+  }
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  function deepMerge(a,b){
+    for(const k in b){
+      if(b[k] && typeof b[k]==="object" && !Array.isArray(b[k])){
+        a[k] = deepMerge(a[k] || {}, b[k]);
+      }else{
+        a[k] = b[k];
+      }
+    }
+    return a;
+  }
+
+  let state = loadState();
+
+  // ===== DIÁRIO: rascunho automático (salva enquanto digita) =====
+  const DIARY_DRAFT_KEY = "planner365_diary_draft_v1";
+  function diarySaveDraft(){
+    try{
+      const titleEl=document.getElementById("diaryTitle");
+      const textEl=document.getElementById("diaryText");
+      const draft = {
+        title: titleEl ? titleEl.value : "",
+        text: textEl ? textEl.value : "",
+        mood: state && state.diaryMood ? state.diaryMood : ""
+      };
+      localStorage.setItem(DIARY_DRAFT_KEY, JSON.stringify(draft));
+    }catch(e){}
+  }
+  function diaryLoadDraft(){
+    try{
+      const raw=localStorage.getItem(DIARY_DRAFT_KEY);
+      if(!raw) return;
+      const draft=JSON.parse(raw);
+      const titleEl=document.getElementById("diaryTitle");
+      const textEl=document.getElementById("diaryText");
+      if(titleEl && (draft.title||"")) titleEl.value = draft.title;
+      if(textEl && (draft.text||"")) textEl.value = draft.text;
+      // mantém o humor salvo no estado também
+      if(draft.mood){
+        state.diaryMood = draft.mood;
+        const lab=document.getElementById("diaryMoodLabel");
+        if(lab) lab.textContent = draft.mood;
+      }
+    }catch(e){}
+  }
+
+  // Ativa autosave do diário quando a página carrega
+  window.addEventListener("load", ()=>{
+    diaryLoadDraft();
+    const titleEl=document.getElementById("diaryTitle");
+    const textEl=document.getElementById("diaryText");
+    if(titleEl) titleEl.addEventListener("input", diarySaveDraft);
+    if(textEl) textEl.addEventListener("input", diarySaveDraft);
+  });
+
+
+  // ==================== DATA / VERSO ====================
+  function isoDate(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const da = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+  function dayOfYear(date){
+    const start = new Date(date.getFullYear(),0,0);
+    const diff = date - start;
+    return Math.floor(diff / (1000*60*60*24));
+  }
+  function todaysVerse(date=new Date()){
+    const idx = dayOfYear(date) % VERSES.length;
+    return VERSES[idx];
+  }
+
+  // Link “abrir versículo” (vai para uma busca do versículo)
+  function verseLink(ref){
+    const q = encodeURIComponent(ref);
+    // usa pesquisa do BibleGateway (se tiver internet)
+    return `https://www.biblegateway.com/quicksearch/?quicksearch=${q}&version=ARA`;
+  }
+
+  // ==================== UI: TABS ====================
+  document.querySelectorAll(".tab").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      el.classList.add("active");
+      const tab = el.dataset.tab;
+      document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+      document.getElementById("sec-"+tab).classList.add("active");
+    });
+  });
+
+  // ==================== HOJE / ENTRADAS POR DATA ====================
+  function ensureDay(dateISO){
+    if(!state.day[dateISO]){
+      state.day[dateISO] = {
+        checklist: { esp:false, sau:false, est:false, fin:false },
+        prio:"", micro:"", notes:"",
+        // espiritual
+        e1:false,e2:false,e3:false,e4:false, ref_esp:"",
+        ea_oracao:false, ea_biblia:false, ea_medit:false, ea_grat:false,
+        s1:false,s2:false,s3:false,s4:false, water:0, ref_saude:"",
+        sa_camin:false, sa_agua:false, sa_refe:false, sa_sono:false,
+        t1:false,t2:false,t3:false,t4:false, studyMin:0, ref_est:"",
+        st_teoria:false, st_pratica:false, st_resumo:false, st_projeto:false,
+        f1:false,f2:false,f3:false,f4:false, fin_in:"", fin_out:"", net:"", ref_fin:"",
+        fi_reg:false, fi_rev:false, fi_res:false, fi_plan:false
+      };
+    }
+    return state.day[dateISO];
+  }
+
+  function getTodayISO(){ return isoDate(new Date()); }
+
+  function syncTodayIfNeeded(){
+    const today = getTodayISO();
+    state.todayISO = today;
+    ensureDay(today);
+  }
+
+  // ==================== RENDER PRINCIPAL ====================
+  function render(){
+    syncTodayIfNeeded();
+    const dISO = state.todayISO;
+    const d = ensureDay(dISO);
+    const now = new Date();
+    document.getElementById("todayLabel").textContent = now.toLocaleDateString("pt-BR", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+    // Verso
+    const v = todaysVerse(now);
+    document.getElementById("verseText").textContent = "“" + v.text + "”";
+    document.getElementById("verseRef").textContent = "— " + v.ref;
+
+    // Mood
+    document.getElementById("moodLabel").textContent = (state.mood || "—");
+
+    // Checklist do dia
+    setChecked("c_espiritual", d.checklist.esp);
+    setChecked("c_saude", d.checklist.sau);
+    setChecked("c_estudos", d.checklist.est);
+    setChecked("c_financas", d.checklist.fin);
+
+    // Planejamento
+    setVal("prio", d.prio);
+    setVal("micro", d.micro);
+    setVal("notes", d.notes);
+
+    // Objetivos
+    setVal("obj_esp", state.objectives.esp);
+    setVal("obj_saude", state.objectives.saude);
+    setVal("obj_est", state.objectives.est);
+    setVal("obj_fin", state.objectives.fin);
+
+    // Espiritual etapas
+    ["e1","e2","e3","e4"].forEach(k=>setChecked(k, !!d[k]));
+    setVal("ref_esp", d.ref_esp);
+
+    // Saúde
+    ["s1","s2","s3","s4"].forEach(k=>setChecked(k, !!d[k]));
+    document.getElementById("waterLabel").textContent = d.water || 0;
+    setVal("ref_saude", d.ref_saude);
+
+    // Estudos
+    ["t1","t2","t3","t4"].forEach(k=>setChecked(k, !!d[k]));
+    document.getElementById("studyLabel").textContent = d.studyMin || 0;
+    setVal("ref_est", d.ref_est);
+
+    // Finanças
+    ["f1","f2","f3","f4"].forEach(k=>setChecked(k, !!d[k]));
+
+    // Atividades (checkboxes extras)
+    ["ea_oracao","ea_biblia","ea_medit","ea_grat","sa_camin","sa_agua","sa_refe","sa_sono","st_teoria","st_pratica","st_resumo","st_projeto","fi_reg","fi_rev","fi_res","fi_plan"].forEach(k=>{
+      const el = document.getElementById(k);
+      if(el) el.checked = !!d[k];
+    });
+
+    setVal("fin_in", d.fin_in);
+    setVal("fin_out", d.fin_out);
+    document.getElementById("netLabel").textContent = d.net || "";
+    setVal("ref_fin", d.ref_fin);
+
+    // Goals
+    setVal("goal_water", state.goals.water);
+    setVal("goal_study", state.goals.study);
+
+    // Score do dia
+    const done = [
+      d.checklist.esp, d.checklist.sau, d.checklist.est, d.checklist.fin
+    ].filter(Boolean).length;
+    const score = Math.round((done/4)*100);
+    document.getElementById("dayScore").textContent = score + "%";
+    document.getElementById("dayBar").style.width = score + "%";
+    document.getElementById("dayBarLabel").textContent = `${done}/4 concluído`;
+
+    // KPIs por área (baseado em etapas + meta)
+    const kEsp = pct([d.e1,d.e2,d.e3,d.e4]) * 0.5 + pct([d.ea_oracao,d.ea_biblia,d.ea_medit,d.ea_grat]) * 0.5;
+    const kSau = (pct([d.s1,d.s2,d.s3,d.s4]) * 0.4 + pct([d.sa_camin,d.sa_agua,d.sa_refe,d.sa_sono]) * 0.3 + pctVal(d.water, state.goals.water) * 0.3);
+    const kEst = (pct([d.t1,d.t2,d.t3,d.t4]) * 0.4 + pct([d.st_teoria,d.st_pratica,d.st_resumo,d.st_projeto]) * 0.3 + pctVal(d.studyMin, state.goals.study) * 0.3);
+    const kFin = pct([d.f1,d.f2,d.f3,d.f4]) * 0.5 + pct([d.fi_reg,d.fi_rev,d.fi_res,d.fi_plan]) * 0.5;
+    document.getElementById("k_esp").textContent = Math.round(kEsp) + "%";
+    document.getElementById("k_sau").textContent = Math.round(kSau) + "%";
+    document.getElementById("k_est").textContent = Math.round(kEst) + "%";
+    document.getElementById("k_fin").textContent = Math.round(kFin) + "%";
+
+    // Mini chart SVG
+    renderMiniChart([
+      {name:"Espiritual", value:kEsp},
+      {name:"Saúde", value:kSau},
+      {name:"Estudos", value:kEst},
+      {name:"Finanças", value:kFin},
+    ]);
+
+    // Calendário
+    renderCalendar();
+    renderAlarms();
+    renderLists();
+    renderQuote();
+    renderSupport();
+    applyTheme();
+    maybeNudgeBackup();
+  }
+
+  function setChecked(id, v){
+    const el = document.getElementById(id);
+    if(el) el.checked = !!v;
+  }
+  function setVal(id, v){
+    const el = document.getElementById(id);
+    if(el) el.value = (v ?? "");
+  }
+  function pct(arr){
+    const total = arr.length;
+    const done = arr.filter(Boolean).length;
+    return (done/total)*100;
+  }
+  function pctVal(val, goal){
+    const g = Math.max(1, Number(goal || 1));
+    const v = Math.max(0, Number(val || 0));
+    return Math.min(100, (v/g)*100);
+  }
+
+  // ==================== MINI CHART (SVG) ====================
+  function renderMiniChart(items){
+    const g = document.getElementById("bars");
+    g.innerHTML = "";
+    const maxH = 110;
+    const baseY = 155;
+    const barW = 58;
+    const gap = 24;
+    const startX = 26;
+    items.forEach((it, i)=>{
+      const x = startX + i*(barW+gap);
+      const h = Math.round((Math.max(0, Math.min(100, it.value))/100)*maxH);
+      const y = baseY - h;
+
+      const bg = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      bg.setAttribute("x", x);
+      bg.setAttribute("y", baseY-maxH);
+      bg.setAttribute("width", barW);
+      bg.setAttribute("height", maxH);
+      bg.setAttribute("rx", 10);
+      bg.setAttribute("fill", "rgba(255,255,255,.07)");
+      g.appendChild(bg);
+
+      const r = document.createElementNS("http://www.w3.org/2000/svg","rect");
+      r.setAttribute("x", x);
+      r.setAttribute("y", y);
+      r.setAttribute("width", barW);
+      r.setAttribute("height", h);
+      r.setAttribute("rx", 10);
+      r.setAttribute("fill", "rgba(255,215,0,.92)");
+      g.appendChild(r);
+
+      const t = document.createElementNS("http://www.w3.org/2000/svg","text");
+      t.setAttribute("x", x + barW/2);
+      t.setAttribute("y", 172);
+      t.setAttribute("text-anchor","middle");
+      t.setAttribute("fill","rgba(255,255,255,.85)");
+      t.setAttribute("font-size","11");
+      t.textContent = it.name;
+      g.appendChild(t);
+
+      const p = document.createElementNS("http://www.w3.org/2000/svg","text");
+      p.setAttribute("x", x + barW/2);
+      p.setAttribute("y", y - 6);
+      p.setAttribute("text-anchor","middle");
+      p.setAttribute("fill","rgba(255,255,255,.9)");
+      p.setAttribute("font-size","11");
+      p.textContent = Math.round(it.value) + "%";
+      g.appendChild(p);
+    });
+  }
+
+  // ==================== AÇÕES (SALVAR) ====================
+  function saveAndUpdate(){
+    syncTodayIfNeeded();
+    const dISO = state.todayISO;
+    const d = ensureDay(dISO);
+
+    // mood (vem do estado geral)
+    // checklist
+    d.checklist.esp = document.getElementById("c_espiritual").checked;
+    d.checklist.sau = document.getElementById("c_saude").checked;
+    d.checklist.est = document.getElementById("c_estudos").checked;
+    d.checklist.fin = document.getElementById("c_financas").checked;
+
+    // planning
+    d.prio = document.getElementById("prio").value || "";
+    d.micro = document.getElementById("micro").value || "";
+    d.notes = document.getElementById("notes").value || "";
+
+    // objectives
+    state.objectives.esp = document.getElementById("obj_esp").value || "";
+    state.objectives.saude = document.getElementById("obj_saude").value || "";
+    state.objectives.est = document.getElementById("obj_est").value || "";
+    state.objectives.fin = document.getElementById("obj_fin").value || "";
+
+    // steps
+    ["e1","e2","e3","e4","ea_oracao","ea_biblia","ea_medit","ea_grat","s1","s2","s3","s4","sa_camin","sa_agua","sa_refe","sa_sono","t1","t2","t3","t4","st_teoria","st_pratica","st_resumo","st_projeto","f1","f2","f3","f4","fi_reg","fi_rev","fi_res","fi_plan"].forEach(k=>{
+      const el = document.getElementById(k);
+      if(el) d[k] = el.checked;
+    });
+
+    // reflections
+    d.ref_esp = document.getElementById("ref_esp").value || "";
+    d.ref_saude = document.getElementById("ref_saude").value || "";
+    d.ref_est = document.getElementById("ref_est").value || "";
+    d.ref_fin = document.getElementById("ref_fin").value || "";
+
+    // finance quick values
+    d.fin_in = document.getElementById("fin_in").value || "";
+    d.fin_out = document.getElementById("fin_out").value || "";
+    d.net = document.getElementById("netLabel").textContent || "";
+
+    // goals
+    state.goals.water = clampNum(document.getElementById("goal_water").value, 1, 30, 8);
+    state.goals.study = clampNum(document.getElementById("goal_study").value, 10, 600, 120);
+
+    saveState();
+    render();
+  }
+
+  function clampNum(v, min, max, fallback){
+    const n = Number(v);
+    if(!Number.isFinite(n)) return fallback;
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function setMood(m){
+    state.mood = m;
+    saveState();
+    render();
+  }
+
+  // água / estudo
+  function water(delta){
+    const d = ensureDay(state.todayISO);
+    d.water = clampNum((d.water || 0) + delta, 0, 30, 0);
+    saveState();
+    render();
+  }
+  function study(delta){
+    const d = ensureDay(state.todayISO);
+    d.studyMin = clampNum((d.studyMin || 0) + delta, 0, 600, 0);
+    saveState();
+    render();
+  }
+
+  // finanças saldo do dia
+  function calcNet(){
+    const d = ensureDay(state.todayISO);
+    const inn = parseFloat(String(document.getElementById("fin_in").value || "0").replace(",", ".")) || 0;
+    const out = parseFloat(String(document.getElementById("fin_out").value || "0").replace(",", ".")) || 0;
+    const net = inn - out;
+    const txt = "Saldo do dia: R$ " + net.toFixed(2);
+    d.net = txt;
+    document.getElementById("netLabel").textContent = txt;
+    saveAndUpdate();
+  }
+  function clearNet(){
+    const d = ensureDay(state.todayISO);
+    d.fin_in = ""; d.fin_out = ""; d.net = "";
+    document.getElementById("fin_in").value = "";
+    document.getElementById("fin_out").value = "";
+    document.getElementById("netLabel").textContent = "";
+    saveState(); render();
+  }
+
+  // versículo: abrir/copy/share
+  function openVerseLink(){
+    const v = todaysVerse(new Date());
+    const url = verseLink(v.ref);
+    window.open(url, "_blank");
+  }
+  async function copyVerse(){
+    const v = todaysVerse(new Date());
+    const txt = `“${v.text}” — ${v.ref}`;
+    try{
+      await navigator.clipboard.writeText(txt);
+      alert("Versículo copiado!");
+    }catch{
+      prompt("Copie aqui:", txt);
+    }
+  }
+  async function shareVerse(){
+    const v = todaysVerse(new Date());
+    const txt = `📖 Versículo do dia\n\n“${v.text}”\n— ${v.ref}`;
+    if(navigator.share){
+      try{ await navigator.share({ text: txt }); }catch(e){}
+    }else{
+      try{ await navigator.clipboard.writeText(txt); alert("Copiei para você colar no WhatsApp!"); }catch{ prompt("Copie:", txt); }
+    }
+  }
+  async function shareDaySummary(){
+    const d = ensureDay(state.todayISO);
+    const done = [d.checklist.esp,d.checklist.sau,d.checklist.est,d.checklist.fin].filter(Boolean).length;
+    const score = Math.round((done/4)*100);
+    const v = todaysVerse(new Date());
+    const txt =
+`📌 Resumo do dia (${state.todayISO})\n\n` +
+`✅ Progresso: ${score}% (${done}/4)\n` +
+`😊 Humor: ${state.mood}\n\n` +
+`🎯 Prioridade: ${d.prio || "-"}\n` +
+`⭐ Vitória pequena: ${d.micro || "-"}\n\n` +
+`📖 Versículo: “${v.text}” — ${v.ref}`;
+    if(navigator.share){
+      try{ await navigator.share({ text: txt }); }catch(e){}
+    }else{
+      try{ await navigator.clipboard.writeText(txt); alert("Copiei para você colar no WhatsApp!"); }catch{ prompt("Copie:", txt); }
+    }
+  }
+
+  // ==================== CALENDÁRIO ====================
+  function monthMatrix(year, monthIndex){
+    const first = new Date(year, monthIndex, 1);
+    const startDay = first.getDay(); // 0 dom
+    const daysInMonth = new Date(year, monthIndex+1, 0).getDate();
+    const weeks = [];
+    let day = 1 - startDay;
+    for(let w=0; w<6; w++){
+      const row = [];
+      for(let i=0; i<7; i++){
+        const d = new Date(year, monthIndex, day);
+        row.push({ date:d, iso: isoDate(d), inMonth: d.getMonth()===monthIndex });
+        day++;
+      }
+      weeks.push(row);
+    }
+    return weeks;
+  }
+
+  function renderCalendar(){
+    // DOW header (1x)
+    const dowEl = document.getElementById("calDow");
+    if(!dowEl.dataset.ready){
+      dowEl.dataset.ready = "1";
+      dowEl.innerHTML = "";
+      DOW.forEach(d=>{
+        const c = document.createElement("div");
+        c.className = "cal-dow";
+        c.textContent = d;
+        dowEl.appendChild(c);
+      });
+    }
+
+    const y = state.calView.year;
+    const m = state.calView.month;
+    const title = new Date(y, m, 1).toLocaleDateString("pt-BR", { month:"long", year:"numeric" });
+    document.getElementById("calTitle").textContent = title;
+
+    const grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+    const weeks = monthMatrix(y,m);
+    const todayISO = getTodayISO();
+
+    weeks.flat().forEach(cell=>{
+      const btn = document.createElement("button");
+      btn.className = "cal-cell" + (cell.inMonth ? "" : " out") + (cell.iso===todayISO ? " today" : "");
+      btn.type = "button";
+      btn.title = "Toque para adicionar evento";
+      btn.innerHTML = `<div style="font-size:12px;opacity:${cell.inMonth?1:.5}">${cell.date.getDate()}</div>`;
+
+      const events = (state.calendar[cell.iso] || []).slice(0,2);
+      events.forEach(ev=>{
+        const div = document.createElement("div");
+        div.className = "event";
+        div.textContent = "• " + ev.title;
+        div.onclick = (e)=>{
+          e.preventDefault(); e.stopPropagation();
+          const ok = confirm("Remover este evento?\n\n" + ev.title);
+          if(ok){ removeEvent(cell.iso, ev.id); }
+        };
+        btn.appendChild(div);
+      });
+      if((state.calendar[cell.iso] || []).length > 2){
+        const more = document.createElement("div");
+        more.className = "small";
+        more.textContent = "+" + ((state.calendar[cell.iso]||[]).length - 2);
+        btn.appendChild(more);
+      }
+
+      btn.onclick = ()=>{
+        const title = (document.getElementById("eventTitle").value || "").trim();
+        const promptTitle = title || prompt("Título do evento:", "");
+        if(!promptTitle) return;
+        addEvent(cell.iso, promptTitle);
+        document.getElementById("eventTitle").value = "";
+      };
+
+      grid.appendChild(btn);
+    });
+  }
+
+  function addEvent(dateISO, title){
+    if(!state.calendar[dateISO]) state.calendar[dateISO] = [];
+    state.calendar[dateISO].unshift({ id: uid(), title });
+    saveState(); render();
+  }
+  function removeEvent(dateISO, id){
+    state.calendar[dateISO] = (state.calendar[dateISO] || []).filter(e=>e.id!==id);
+    saveState(); render();
+  }
+  function prevMonth(){
+    let {year, month} = state.calView;
+    month--;
+    if(month<0){ month=11; year--; }
+    state.calView = {year, month};
+    saveState(); render();
+  }
+  function nextMonth(){
+    let {year, month} = state.calView;
+    month++;
+    if(month>11){ month=0; year++; }
+    state.calView = {year, month};
+    saveState(); render();
+  }
+  function goToday(){
+    const d = new Date();
+    state.calView = { year: d.getFullYear(), month: d.getMonth() };
+    state.todayISO = isoDate(d);
+    ensureDay(state.todayISO);
+    saveState(); render();
+  }
+
+  function uid(){
+    return Math.random().toString(16).slice(2) + Date.now().toString(16);
+  }
+
+  // ==================== BACKUP ====================
+  function exportBackup(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "planner365_backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  function importBackup(){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+    input.onchange = async ()=>{
+      const file = input.files && input.files[0];
+      if(!file) return;
+      const txt = await file.text();
+      try{
+        const parsed = JSON.parse(txt);
+        state = deepMerge(structuredClone(DEFAULT), parsed);
+        saveState(); render();
+        alert("Backup importado com sucesso!");
+      }catch(e){
+        alert("Arquivo inválido.");
+      }
+    };
+    input.click();
+  }
+  function resetAll(){
+    const ok = confirm("Zerar tudo? Isso apaga os dados salvos neste aparelho.");
+    if(!ok) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = structuredClone(DEFAULT);
+    saveState(); render();
+  }
+
+  
+  // ==================== NOVO DIA ====================
+  function newDay(){
+    const ok = confirm("Criar um novo dia agora?\n\nIsso vai:\n- Ir para a data de hoje\n- Zerar checklist/etapas/contadores do dia de hoje\n- Não apaga dias anteriores\n\nDeseja continuar?");
+    if(!ok) return;
+    const today = new Date();
+    const todayISO = isoDate(today);
+    state.todayISO = todayISO;
+    state.day[todayISO] = {
+      checklist: { esp:false, sau:false, est:false, fin:false },
+      prio:"", micro:"", notes:"",
+      e1:false,e2:false,e3:false,e4:false, ref_esp:"",
+      ea_oracao:false, ea_biblia:false, ea_medit:false, ea_grat:false,
+      s1:false,s2:false,s3:false,s4:false, water:0, ref_saude:"",
+      sa_camin:false, sa_agua:false, sa_refe:false, sa_sono:false,
+      t1:false,t2:false,t3:false,t4:false, studyMin:0, ref_est:"",
+      st_teoria:false, st_pratica:false, st_resumo:false, st_projeto:false,
+      f1:false,f2:false,f3:false,f4:false, fin_in:"", fin_out:"", net:"", ref_fin:"",
+      fi_reg:false, fi_rev:false, fi_res:false, fi_plan:false
+    };
+    state.calView = { year: today.getFullYear(), month: today.getMonth() };
+    saveState();
+    render();
+    alert("Novo dia criado! ✅");
+  }
+
+  // ==================== TEMA ====================
+  function applyTheme(){
+    const t = (state.theme || "dark");
+    document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
+  }
+  function toggleTheme(){
+    state.theme = (state.theme === "light") ? "dark" : "light";
+    saveState(); applyTheme();
+  }
+
+  // ==================== BACKUP ====================
+  function downloadBackup(){
+    try{
+      const data = JSON.stringify(state, null, 2);
+      const blob = new Blob([data], {type:"application/json"});
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0,19).replaceAll(":","-");
+      a.download = `planner365_backup_${stamp}.json`;
+      a.href = URL.createObjectURL(blob);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+      state.lastBackupAt = new Date().toISOString();
+      saveState();
+      alert("Backup baixado ✅");
+    }catch(e){ alert("Não consegui gerar o backup."); }
+  }
+  function restoreBackup(ev){
+    const file = ev.target.files && ev.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const obj = JSON.parse(reader.result);
+        const ok = confirm("Restaurar backup agora?\n\nIsso substituirá seus dados atuais neste navegador.");
+        if(!ok) return;
+        state = obj;
+        saveState();
+        applyTheme();
+        render();
+        alert("Backup restaurado ✅");
+      }catch(e){ alert("Arquivo inválido."); }
+      finally{ ev.target.value = ""; }
+    };
+    reader.readAsText(file);
+  }
+  function maybeNudgeBackup(){
+    const last = state.lastBackupAt ? new Date(state.lastBackupAt) : null;
+    const now = new Date();
+    if(!last || (now - last) > (1000*60*60*24*7)){
+      const el = document.getElementById("quoteRef");
+      if(el) el.textContent = "Dica: faça um backup (💾) pelo menos 1x por semana.";
+    }
+  }
+
+  // ==================== FRASE MOTIVACIONAL ====================
+  const QUOTES = [
+    {t:"Sheila, um passo pequeno hoje vale mais do que um plano perfeito amanhã.", r:"Consistência > perfeição."},
+    {t:"Deus guia quem decide continuar — mesmo devagar.", r:"Você não está sozinha."},
+    {t:"Seu futuro agradece cada escolha simples que você faz agora.", r:"Foco no próximo passo."},
+    {t:"Hoje, escolha o que te fortalece: fé, cuidado e disciplina.", r:"Você consegue."},
+    {t:"Quando a mente cansar, volte ao básico: respirar, orar, agir.", r:"Acalma e segue."},
+    {t:"Você merece paz. E paz também é organização.", r:"Um dia de cada vez."}
+  ];
+  function newQuote(){
+    state.quoteIndex = Math.floor(Math.random()*QUOTES.length);
+    saveState(); renderQuote();
+  }
+  function renderQuote(){
+    const i = (typeof state.quoteIndex === "number") ? state.quoteIndex : 0;
+    const q = QUOTES[i % QUOTES.length];
+    const qt = document.getElementById("quoteText");
+    const qr = document.getElementById("quoteRef");
+    if(qt) qt.textContent = q.t;
+    if(qr) qr.textContent = q.r + " • Para você, Sheila 💙";
+  }
+  function copyQuote(){
+    const qt = document.getElementById("quoteText");
+    if(!qt) return;
+    (navigator.clipboard ? navigator.clipboard.writeText(qt.textContent) : Promise.reject()).then(()=>alert("Frase copiada ✅")).catch(()=>alert("Não consegui copiar."));
+  }
+
+  // ==================== ALARMES ====================
+  function requestNotif(){
+    if(!("Notification" in window)){ alert("Seu navegador não suporta notificações."); return; }
+    if(Notification.permission === "granted"){ alert("Notificações já estão permitidas ✅"); return; }
+    Notification.requestPermission().then((p)=>{
+      if(p === "granted") alert("Notificações ativadas ✅");
+      else alert("Sem permissão. Você ainda terá alerta na tela.");
+    });
+  }
+  function addAlarm(){
+    const time = (document.getElementById("alarmTime").value || "").trim();
+    if(!time){ alert("Escolha um horário."); return; }
+    const title = document.getElementById("alarmActivity").value || "Lembrete";
+    const dateISO = state.todayISO || isoDate(new Date());
+    const id = uid();
+    state.alarms = state.alarms || [];
+    state.alarms.unshift({ id, dateISO, timeHHMM: time, title, fired:false });
+    saveState(); renderAlarms(); alert("Alarme adicionado ✅");
+  }
+  function clearAlarms(){
+    const ok = confirm("Remover todos os alarmes?"); if(!ok) return;
+    state.alarms = []; saveState(); renderAlarms();
+  }
+  function removeAlarm(id){
+    state.alarms = (state.alarms || []).filter(a=>a.id!==id);
+    saveState(); renderAlarms();
+  }
+  function renderAlarms(){
+    const list = document.getElementById("alarmList"); if(!list) return;
+    const now = new Date();
+    const nowISO = isoDate(now);
+    const nowMin = now.getHours()*60 + now.getMinutes();
+    const alarms = (state.alarms || []).slice().sort((a,b)=>{
+      if(a.dateISO !== b.dateISO) return a.dateISO < b.dateISO ? 1 : -1;
+      return a.timeHHMM < b.timeHHMM ? 1 : -1;
+    });
+    list.innerHTML = "";
+    if(!alarms.length){
+      const div = document.createElement("div"); div.className="small"; div.textContent="Nenhum alarme ainda."; list.appendChild(div); return;
+    }
+    alarms.slice(0,10).forEach(a=>{
+      const [hh,mm] = a.timeHHMM.split(":"); const tmin = (Number(hh||0)*60 + Number(mm||0));
+      let badge = a.dateISO;
+      if(a.dateISO === nowISO){
+        const diff = tmin - nowMin;
+        badge = diff>=0 ? `em ${diff} min` : `atrasado ${Math.abs(diff)} min`;
+      }
+      const row = document.createElement("div");
+      row.className="pill"; row.style.justifyContent="space-between"; row.style.gap="10px";
+      row.innerHTML = `<span>⏰ <b>${a.timeHHMM}</b> • ${a.title} <span style="opacity:.8">(${badge})</span></span>`;
+      const btn = document.createElement("button"); btn.className="secondary"; btn.textContent="Remover"; btn.onclick=()=>removeAlarm(a.id);
+      row.appendChild(btn); list.appendChild(row);
+    });
+  }
+  function fireAlarm(a){
+    const title = a.title || "Lembrete";
+    if("Notification" in window && Notification.permission === "granted"){
+      try{ new Notification("Planner 365 — Lembrete", { body: title }); }catch(e){}
+    }
+    alert("⏰ Lembrete: " + title);
+  }
+  function checkAlarms(){
+    const now = new Date();
+    const nowISO = isoDate(now);
+    const nowHHMM = String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+    let changed=false;
+    (state.alarms || []).forEach(a=>{
+      if(a.fired) return;
+      if(a.dateISO===nowISO && a.timeHHMM===nowHHMM){
+        a.fired=true; changed=true; fireAlarm(a);
+      }
+    });
+    if(changed){ saveState(); renderAlarms(); }
+  }
+
+  // ==================== LISTAS + DIÁRIO (com calendário) ====================
+  const LIST_CONFIG = {
+    health:    { titleId:"healthTitle",    dateId:"healthDate",    timeId:"healthTime",    notesId:"healthNotes",    listId:"healthList" },
+    nutrition: { titleId:"nutritionTitle", dateId:"nutritionDate", timeId:"nutritionTime", notesId:"nutritionNotes", listId:"nutritionList" },
+    activities:{ titleId:"activityTitle",  dateId:"activityDate",  timeId:"activityTime",  notesId:"activityNotes",  listId:"activitiesList" },
+    therapy:   { titleId:"therapyTitle",   dateId:"therapyDate",   timeId:"therapyTime",   notesId:"therapyNotes",   listId:"therapyList" },
+    studies:   { titleId:"studyTaskTitle", dateId:"studyTaskDate", timeId:"studyTaskTime", notesId:"studyTaskNotes", listId:"studiesList" }
+  };
+  function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); }
+
+  function addListItem(key){
+    const cfg = LIST_CONFIG[key]; if(!cfg){ alert("Lista inválida."); return; }
+    const title=(document.getElementById(cfg.titleId).value||"").trim();
+    const date=(document.getElementById(cfg.dateId).value||"").trim();
+    const time=(document.getElementById(cfg.timeId).value||"").trim();
+    const notes=(document.getElementById(cfg.notesId).value||"").trim();
+    if(!title){ alert("Digite um título."); return; }
+    state.lists = state.lists || { health:[], nutrition:[], activities:[], therapy:[], studies:[], diary:[] };
+    state.lists[key] = state.lists[key] || [];
+    state.lists[key].unshift({ id: uid(), title, date, time, notes, createdAt:new Date().toISOString() });
+    saveState(); clearListInputs(key); renderLists();
+  }
+  function clearListInputs(key){
+    const cfg = LIST_CONFIG[key]; if(!cfg) return;
+    document.getElementById(cfg.titleId).value="";
+    document.getElementById(cfg.dateId).value="";
+    document.getElementById(cfg.timeId).value="";
+    document.getElementById(cfg.notesId).value="";
+  }
+  function removeListItem(key,id){
+    if(!state.lists || !state.lists[key]) return;
+    state.lists[key]=state.lists[key].filter(x=>x.id!==id);
+    saveState(); renderLists();
+  }
+  function addToCalendarFromList(key,id){
+    if(!state.lists || !state.lists[key]){ alert("Item não encontrado."); return; }
+    const it = state.lists[key].find(x=>x.id===id);
+    if(!it){ alert("Item não encontrado."); return; }
+    let dateISO = (it.date||"").trim();
+    if(!dateISO){
+      dateISO = (prompt("Qual data para adicionar no calendário? (AAAA-MM-DD)", state.todayISO || isoDate(new Date())) || "").trim();
+      if(!dateISO) return;
+    }
+    const when = (it.time||"").trim();
+    let title = (when ? (when+" ") : "") + (it.title || "Evento");
+    if(it.notes){ const n=String(it.notes).trim(); if(n) title += " — " + n; }
+    addEvent(dateISO, title);
+    alert("Adicionado ao calendário ✅");
+  }
+  function renderLists(){
+    Object.keys(LIST_CONFIG).forEach(key=>{
+      const cfg = LIST_CONFIG[key];
+      const el = document.getElementById(cfg.listId);
+      if(!el) return;
+      const items = (state.lists && state.lists[key]) ? state.lists[key] : [];
+      el.innerHTML="";
+      if(!items.length){
+        const d=document.createElement("div"); d.className="small"; d.textContent="Nenhum item ainda."; el.appendChild(d); return;
+      }
+      items.slice(0,12).forEach(it=>{
+        const pill=document.createElement("div"); pill.className="pill"; pill.style.justifyContent="space-between"; pill.style.gap="10px";
+        const when=[it.date,it.time].filter(Boolean).join(" ");
+        pill.innerHTML=`<span><b>${escapeHtml(it.title)}</b> ${when ? "• "+escapeHtml(when) : ""}${it.notes ? "<div class='small' style='margin-top:4px;'>"+escapeHtml(it.notes)+"</div>" : ""}</span>`;
+        const btnCal=document.createElement("button"); btnCal.className="secondary"; btnCal.textContent="📅 Calendário"; btnCal.onclick=()=>addToCalendarFromList(key,it.id);
+        const btn=document.createElement("button"); btn.className="secondary"; btn.textContent="Remover"; btn.onclick=()=>removeListItem(key,it.id);
+        pill.appendChild(btnCal); pill.appendChild(btn); el.appendChild(pill);
+      });
+    });
+    renderDiaryList();
+  }
+
+  function diarySetMood(m){ state.diaryMood=m; saveState(); const lab=document.getElementById("diaryMoodLabel"); if(lab) lab.textContent=m; }
+  function addDiaryEntry(){
+    const title=(document.getElementById("diaryTitle").value||"").trim();
+    const text=(document.getElementById("diaryText").value||"").trim();
+    if(!title && !text){ alert("Escreva um título ou uma anotação."); return; }
+    state.lists = state.lists || { health:[], nutrition:[], activities:[], therapy:[], studies:[], diary:[] };
+    state.lists.diary = state.lists.diary || [];
+    const stamp=new Date().toLocaleString("pt-BR");
+    state.lists.diary.unshift({ id: uid(), mood: state.diaryMood||"—", title, text, stamp, createdAt:new Date().toISOString() });
+    saveState(); clearDiaryInputs(); renderDiaryList();
+  }
+  function clearDiaryInputs(){ document.getElementById("diaryTitle").value=""; document.getElementById("diaryText").value=""; try{localStorage.removeItem(DIARY_DRAFT_KEY);}catch(e){} }
+  function removeDiaryEntry(id){
+    if(!state.lists || !state.lists.diary) return;
+    state.lists.diary = state.lists.diary.filter(x=>x.id!==id);
+    saveState(); renderDiaryList();
+  }
+  function renderDiaryList(){
+    const lab=document.getElementById("diaryMoodLabel"); if(lab) lab.textContent=(state.diaryMood||"—");
+    const el=document.getElementById("diaryList"); if(!el) return;
+    const items=(state.lists && state.lists.diary) ? state.lists.diary : [];
+    el.innerHTML="";
+    if(!items.length){
+      const d=document.createElement("div"); d.className="small"; d.textContent="Sem entradas ainda. Adicione uma acima."; el.appendChild(d); return;
+    }
+    items.slice(0,20).forEach(it=>{
+      const box=document.createElement("div"); box.className="pill"; box.style.justifyContent="space-between"; box.style.gap="10px";
+      box.innerHTML=`<span><b>${escapeHtml(it.mood||"—")}</b> • <span class="small">${escapeHtml(it.stamp||"")}</span><div style="margin-top:6px;"><b>${escapeHtml(it.title||"")}</b></div>${it.text ? "<div class='small' style='margin-top:4px;'>"+escapeHtml(it.text)+"</div>" : ""}</span>`;
+      const btn=document.createElement("button"); btn.className="secondary"; btn.textContent="Remover"; btn.onclick=()=>removeDiaryEntry(it.id);
+      box.appendChild(btn); el.appendChild(box);
+    });
+  }
+
+  // ==================== APOIO ====================
+  function saveSupport(){
+    state.support = state.support || { checkinMood:"", urgeLevel:"", triggerText:"", planNow:"", p_blockSites:false, p_limitPix:false, p_noBetToday:false, p_accountability:false, moneySaved:0, lastGambleDate:"", urges: [] };
+    const g=(id)=>document.getElementById(id);
+    state.support.checkinMood=(g("checkinMood")?.value||"").trim();
+    state.support.urgeLevel=(g("urgeLevel")?.value||"").trim();
+    state.support.triggerText=(g("triggerText")?.value||"").trim();
+    state.support.planNow=(g("planNow")?.value||"").trim();
+    state.support.p_blockSites=!!g("p_blockSites")?.checked;
+    state.support.p_limitPix=!!g("p_limitPix")?.checked;
+    state.support.p_noBetToday=!!g("p_noBetToday")?.checked;
+    state.support.p_accountability=!!g("p_accountability")?.checked;
+    state.support.moneySaved=Number(g("moneySaved")?.value||0);
+    state.support.lastGambleDate=(g("lastGambleDate")?.value||"").trim();
+    // registra valor evitado por dia
+    state.support.savingsByDate = state.support.savingsByDate || {};
+    const todayISO = state.todayISO || isoDate(new Date());
+    const v = Number(state.support.moneySaved || 0);
+    if(v && v > 0){ state.support.savingsByDate[todayISO] = v; }
+    saveState(); renderSupport();
+  }
+  function logUrge(){
+    if(!state.support) saveSupport();
+    const stamp=new Date().toLocaleString("pt-BR");
+    state.support.urges = state.support.urges || [];
+    state.support.urges.unshift({ id: uid(), stamp, mood: state.support.checkinMood||"—", lvl: state.support.urgeLevel||"—", trig: state.support.triggerText||"", plan: state.support.planNow||"" });
+    saveState(); renderSupport(); alert("Registro salvo ✅");
+  }
+  function removeUrge(id){
+    if(!state.support || !state.support.urges) return;
+    state.support.urges = state.support.urges.filter(x=>x.id!==id);
+    saveState(); renderSupport();
+  }
+  function calcDaysNoGamble(){
+    const d=(state.support && state.support.lastGambleDate) ? state.support.lastGambleDate : "";
+    if(!d) return "—";
+    const last=new Date(d+"T00:00:00"); const now=new Date();
+    const diff=Math.floor((now-last)/(1000*60*60*24));
+    return String(diff>=0 ? diff : 0);
+  }
+  function renderSupport(){
+    const s=state.support || {};
+    const setVal=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=(v??""); };
+    const setChk=(id,v)=>{ const el=document.getElementById(id); if(el) el.checked=!!v; };
+    setVal("checkinMood", s.checkinMood||"");
+    setVal("urgeLevel", s.urgeLevel||"");
+    setVal("triggerText", s.triggerText||"");
+    setVal("planNow", s.planNow||"");
+    setVal("moneySaved", s.moneySaved??0);
+    setVal("lastGambleDate", s.lastGambleDate||"");
+    setChk("p_blockSites", s.p_blockSites);
+    setChk("p_limitPix", s.p_limitPix);
+    setChk("p_noBetToday", s.p_noBetToday);
+    setChk("p_accountability", s.p_accountability);
+    const dn=document.getElementById("daysNoGamble"); if(dn) dn.textContent=calcDaysNoGamble();
+    const sw=document.getElementById("savedWeek"); if(sw) sw.textContent = "R$ " + sumSavedLastDays(7).toFixed(2).replace(".",",");
+    const sm=document.getElementById("savedMonth"); if(sm) sm.textContent = "R$ " + sumSavedThisMonth().toFixed(2).replace(".",",");
+    renderBreathTimer();
+    const list=document.getElementById("urgeList");
+    if(list){
+      const items=s.urges || [];
+      list.innerHTML="";
+      if(!items.length){
+        const d=document.createElement("div"); d.className="small"; d.textContent="Sem registros ainda. Quando o impulso vier, registre — isso ajuda a vencer."; list.appendChild(d);
+      }else{
+        items.slice(0,12).forEach(it=>{
+          const pill=document.createElement("div"); pill.className="pill"; pill.style.justifyContent="space-between"; pill.style.gap="10px";
+          pill.innerHTML=`<span><b>${escapeHtml(it.stamp||"")}</b> • ${escapeHtml(it.mood||"—")} • impulso: <b>${escapeHtml(it.lvl||"—")}</b>${it.trig? "<div class='small' style='margin-top:4px;'><b>Gatilho:</b> "+escapeHtml(it.trig)+"</div>":""}${it.plan? "<div class='small'><b>Plano:</b> "+escapeHtml(it.plan)+"</div>":""}</span>`;
+          const btn=document.createElement("button"); btn.className="secondary"; btn.textContent="Remover"; btn.onclick=()=>removeUrge(it.id);
+          pill.appendChild(btn); list.appendChild(pill);
+        });
+      }
+    }
+  }
+  function doBreath(){ alert("4s inspirar • 4s segurar • 6s soltar. Repita por 2 minutos. 🌬️"); }
+  function quickPrayer(){ alert("Oração curta: \"Deus, me dá força e paz agora. Guia meus passos e me ajuda a escolher o que me faz bem. Amém.\" 🙏"); }
+
+  // ===== Respiração com cronômetro real =====
+  let breathInterval = null;
+  let breathRemaining = 120; // seconds
+
+  function fmtMMSS(sec){
+    const m = String(Math.floor(sec/60)).padStart(2,"0");
+    const s = String(Math.floor(sec%60)).padStart(2,"0");
+    return `${m}:${s}`;
+  }
+
+  function renderBreathTimer(){
+    const el = document.getElementById("breathTimer");
+    if(el) el.textContent = fmtMMSS(breathRemaining);
+  }
+
+  function startBreath(){
+    stopBreath();
+    breathRemaining = 120;
+    renderBreathTimer();
+    breathInterval = setInterval(()=>{
+      breathRemaining -= 1;
+      if(breathRemaining <= 0){
+        breathRemaining = 0;
+        renderBreathTimer();
+        stopBreath();
+        alert("✅ Respiração concluída. Você venceu este momento. Agora escolha 1 ação pequena.");
+        return;
+      }
+      renderBreathTimer();
+    }, 1000);
+  }
+
+  function stopBreath(){
+    if(breathInterval){ clearInterval(breathInterval); breathInterval = null; }
+    renderBreathTimer();
+  }
+
+  // ===== Ações de emergência =====
+  function setPlanNow(text){
+    const el = document.getElementById("planNow");
+    if(el){ el.value = text; }
+    saveSupport();
+    alert("Plano atualizado ✅");
+  }
+
+  // ===== Poupança semanal/mensal =====
+  function sumSavedLastDays(n){
+    const map = (state.support && state.support.savingsByDate) ? state.support.savingsByDate : {};
+    const now = new Date();
+    let total = 0;
+    for(let i=0;i<n;i++){
+      const d = new Date(now);
+      d.setDate(now.getDate()-i);
+      const iso = isoDate(d);
+      total += Number(map[iso] || 0);
+    }
+    return total;
+  }
+
+  function sumSavedThisMonth(){
+    const map = (state.support && state.support.savingsByDate) ? state.support.savingsByDate : {};
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth(); // 0-11
+    let total = 0;
+    Object.keys(map).forEach(k=>{
+      // k is YYYY-MM-DD
+      const dt = new Date(k + "T00:00:00");
+      if(dt.getFullYear()===y && dt.getMonth()===m){
+        total += Number(map[k] || 0);
+      }
+    });
+    return total;
+  }
+
+// ==================== INIT ====================
+  render();
+  applyTheme();
+  renderQuote();
+  renderSupport();
+  renderAlarms();
+  renderLists();
+  maybeNudgeBackup();
+  setInterval(checkAlarms, 20000);
+</script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js");
+    });
+  }
+</script>
+</body>
+</html>
