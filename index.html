@@ -174,6 +174,37 @@ input, textarea, select{ background: rgba(255,255,255,.12) !important; border-co
     <p class="sub">Versículo diário (pronto para ler e compartilhar) • Calendário sempre aberto • Metas por área • Salva automaticamente</p>
 
     <div class="topbar">
+<div class="card" id="sec-dados">
+  <h2>👤 Dados pessoais</h2>
+  <p class="small">Preencha uma vez. Fica salvo automaticamente neste aparelho.</p>
+
+  <div class="split">
+    <div>
+      <label class="small">Nome</label>
+      <input id="p_name" placeholder="Digite seu nome" />
+    </div>
+    <div>
+      <label class="small">WhatsApp</label>
+      <input id="p_whats" placeholder="(DDD) 9xxxx-xxxx" />
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:10px;">
+    <div>
+      <label class="small">E-mail</label>
+      <input id="p_email" placeholder="seuemail@..." />
+    </div>
+    <div>
+      <label class="small">Cidade/UF</label>
+      <input id="p_city" placeholder="Ex: São Paulo/SP" />
+    </div>
+  </div>
+
+  <div style="margin-top:10px;">
+    <label class="small">Meta principal</label>
+    <input id="p_goal" placeholder="Ex: ler a Bíblia em 1 ano, estudar 2h/dia..." />
+  </div>
+</div>
       <div class="row">
         <span class="pill">📅 <span id="todayLabel"></span></span>
         <span class="pill">😊 Humor: <b id="moodLabel">—</b></span>
@@ -1808,6 +1839,60 @@ input, textarea, select{ background: rgba(255,255,255,.12) !important; border-co
       navigator.serviceWorker.register("./service-worker.js");
     });
   }
+</script>
+<script>
+  // ===== DADOS PESSOAIS (salva por pessoa / por aparelho) =====
+  const PROFILE_KEY = "planner365_profile_v1";
+
+  function loadProfile(){
+    try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}"); }
+    catch(e){ return {}; }
+  }
+  function saveProfile(p){
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  }
+
+  function applyProfileToUI(p){
+    // Coloca o nome no título (sem quebrar nada)
+    const title = document.querySelector("h1");
+    if (title && p.name) {
+      title.textContent = `📘 Planner 365 — ${p.name}`;
+    }
+  }
+
+  window.addEventListener("load", () => {
+    const p = loadProfile();
+
+    const nameEl  = document.getElementById("p_name");
+    const whatsEl = document.getElementById("p_whats");
+    const emailEl = document.getElementById("p_email");
+    const cityEl  = document.getElementById("p_city");
+    const goalEl  = document.getElementById("p_goal");
+
+    if (nameEl)  nameEl.value  = p.name  || "";
+    if (whatsEl) whatsEl.value = p.whats || "";
+    if (emailEl) emailEl.value = p.email || "";
+    if (cityEl)  cityEl.value  = p.city  || "";
+    if (goalEl)  goalEl.value  = p.goal  || "";
+
+    applyProfileToUI(p);
+
+    function hook(el, key){
+      if(!el) return;
+      el.addEventListener("input", () => {
+        const p2 = loadProfile();
+        p2[key] = el.value;
+        saveProfile(p2);
+        if(key === "name") applyProfileToUI(p2);
+      });
+    }
+
+    hook(nameEl,  "name");
+    hook(whatsEl, "whats");
+    hook(emailEl, "email");
+    hook(cityEl,  "city");
+    hook(goalEl,  "goal");
+  });
 </script>
 </body>
 </html>
